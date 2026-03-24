@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a56db">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="InjuryTrack">
+<title>InjuryTrack — FC Bagnols Pont</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#1a56db;--blue-d:#1140a8;--blue-l:#eff4ff;--blue-m:#c3d5f7;
+  --ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;--ink5:#d1d5db;--ink6:#f3f4f6;
+  --bg:#f9fafb;--white:#fff;--border:#e5e7eb;
+  --red:#dc2626;--red-l:#fef2f2;--orange:#ea580c;--orange-l:#fff7ed;
+  --green:#16a34a;--green-l:#f0fdf4;--yellow:#d97706;--yellow-l:#fffbeb;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh-lg:0 8px 24px rgba(0,0,0,.10);
+  --r:12px;--r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Figtree',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:'Figtree',sans-serif;}
+button{cursor:pointer;border:none;}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:var(--blue);padding:0 24px;display:flex;align-items:center;gap:16px;height:60px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;border:1.5px solid rgba(255,255,255,.3);}
+.logo-text{font-family:'Instrument Serif',serif;font-size:20px;color:#fff;letter-spacing:-.2px;}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:1px;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.sync-indicator{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.8);background:rgba(255,255,255,.1);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.last-sync{font-size:10px;color:rgba(255,255,255,.5);margin-left:4px;}
+
+/* ── NAV TABS ── */
+.nav-tabs{background:var(--white);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:0;overflow-x:auto;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{display:flex;align-items:center;gap:7px;padding:14px 20px;font-size:14px;font-weight:600;color:var(--ink3);border-bottom:2.5px solid transparent;white-space:nowrap;transition:.15s;background:none;cursor:pointer;}
+.nav-tab:hover{color:var(--ink);}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.nav-tab .tab-badge{background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:10px;padding:1px 6px;}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;padding:24px;max-width:1200px;margin:0 auto;width:100%;}
+
+/* ── PAGE ── */
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.red::before{background:var(--red);}
+.kpi.green::before{background:var(--green);}
+.kpi.blue::before{background:var(--blue);}
+.kpi.orange::before{background:var(--orange);}
+.kpi-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink3);}
+.kpi-value{font-family:'Instrument Serif',serif;font-size:40px;line-height:1;margin:6px 0 4px;}
+.kpi.red .kpi-value{color:var(--red);}
+.kpi.green .kpi-value{color:var(--green);}
+.kpi.blue .kpi-value{color:var(--blue);}
+.kpi.orange .kpi-value{color:var(--orange);}
+.kpi-sub{font-size:12px;color:var(--ink3);}
+.kpi-icon{position:absolute;right:16px;top:16px;font-size:26px;opacity:.1;}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:18px;}
+.card:last-child{margin-bottom:0;}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-title{font-size:14px;font-weight:700;}
+.card-body{padding:20px;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:700;transition:.15s;border:none;cursor:pointer;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue-d);}
+.btn-outline{background:var(--white);color:var(--ink2);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-danger{background:var(--red-l);color:var(--red);border:1.5px solid #fecaca;}
+.btn-danger:hover{background:#fecaca;}
+.btn-green{background:var(--green-l);color:var(--green);border:1.5px solid #bbf7d0;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-icon{width:32px;height:32px;padding:0;border-radius:var(--r-sm);flex-shrink:0;}
+.loading-btn{opacity:.6;pointer-events:none;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.b-red{background:var(--red-l);color:var(--red);}
+.b-green{background:var(--green-l);color:var(--green);}
+.b-orange{background:var(--orange-l);color:var(--orange);}
+.b-blue{background:var(--blue-l);color:var(--blue);}
+.b-gray{background:var(--ink6);color:var(--ink3);border:1px solid var(--border);}
+
+/* ── ALERTS ── */
+.alert{border-radius:var(--r-sm);padding:12px 16px;display:flex;gap:10px;align-items:flex-start;border:1px solid;font-size:13px;margin-bottom:10px;}
+.alert:last-child{margin-bottom:0;}
+.alert.red{background:var(--red-l);border-color:#fecaca;}
+.alert.orange{background:var(--orange-l);border-color:#fed7aa;}
+.alert.green{background:var(--green-l);border-color:#bbf7d0;}
+.alert.blue{background:var(--blue-l);border-color:var(--blue-m);}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);border-bottom:1px solid var(--border);background:var(--ink6);white-space:nowrap;}
+td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr{transition:.1s;}
+tbody tr:hover{background:var(--bg);}
+
+/* ── PLAYER AVATAR ── */
+.p-ava{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.p-cell{display:flex;align-items:center;gap:10px;}
+.p-name{font-weight:700;font-size:14px;}
+.p-pos{font-size:11px;color:var(--ink3);margin-top:1px;}
+
+/* ── PROGRESS ── */
+.prog{height:6px;background:var(--ink5);border-radius:10px;overflow:hidden;}
+.prog-f{height:100%;border-radius:10px;transition:width .5s;}
+
+/* ── INJURY CARD ── */
+.inj-item{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border);}
+.inj-item:last-child{border-bottom:none;}
+.inj-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sev-h{background:var(--red-l);}
+.sev-m{background:var(--orange-l);}
+.sev-l{background:var(--green-l);}
+.inj-days{margin-left:auto;text-align:right;flex-shrink:0;}
+.days-n{font-family:'Instrument Serif',serif;font-size:26px;line-height:1;}
+.days-l{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.form-grid.cols-1{grid-template-columns:1fr;}
+@media(max-width:600px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);}
+.fg.full{grid-column:1/-1;}
+.fi,.fs,.fta{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-size:14px;color:var(--ink);outline:none;width:100%;transition:.15s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--blue);background:var(--white);}
+.fi.err{border-color:var(--red);}
+.fta{resize:vertical;min-height:80px;}
+.fs{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.err-msg{font-size:11px;color:var(--red);font-weight:600;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-ov.open{display:flex;}
+.modal{background:var(--white);border-radius:16px;border:1px solid var(--border);box-shadow:var(--sh-lg);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(.97);}to{opacity:1;transform:scale(1);}}
+.modal::-webkit-scrollbar{width:4px;}
+.modal::-webkit-scrollbar-thumb{background:var(--ink5);border-radius:2px;}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Instrument Serif',serif;font-size:22px;}
+.modal-close{width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:.15s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transition:.25s;z-index:999;pointer-events:none;box-shadow:var(--sh-lg);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── SEARCH ── */
+.search-row{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.search-input{flex:1;min-width:180px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 14px;font-size:14px;color:var(--ink);outline:none;transition:.15s;}
+.search-input:focus{border-color:var(--blue);}
+.filter-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--bg);color:var(--ink3);border:1.5px solid var(--border);cursor:pointer;transition:.15s;white-space:nowrap;}
+.pill.on{background:var(--blue-l);color:var(--blue);border-color:var(--blue-m);}
+
+/* ── TIMELINE ── */
+.tl{display:flex;flex-direction:column;}
+.tl-item{display:flex;gap:12px;padding:10px 0;position:relative;}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:11px;top:28px;bottom:0;width:1px;background:var(--border);}
+.tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid;flex-shrink:0;z-index:1;}
+.tl-dot.r{background:var(--red-l);border-color:var(--red);color:var(--red);}
+.tl-dot.g{background:var(--green-l);border-color:var(--green);color:var(--green);}
+.tl-dot.b{background:var(--blue-l);border-color:var(--blue);color:var(--blue);}
+.tl-dot.o{background:var(--orange-l);border-color:var(--orange);color:var(--orange);}
+.tl-text{font-size:13px;font-weight:500;}
+.tl-time{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:var(--ink3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-size:16px;font-weight:700;color:var(--ink2);margin-bottom:6px;}
+.empty-sub{font-size:13px;}
+
+/* ── INFO ROW ── */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.info-row:last-child{border-bottom:none;}
+.info-row .lbl{color:var(--ink3);}
+.info-row .val{font-weight:600;}
+
+/* ── LOADING ── */
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:32px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── SYNC STATUS BAR ── */
+.sync-bar{background:var(--blue-l);border-bottom:1px solid var(--blue-m);padding:8px 24px;font-size:12px;color:var(--blue);display:flex;align-items:center;gap:8px;}
+.sync-bar.error{background:var(--red-l);border-color:#fecaca;color:var(--red);}
+.sync-bar.success{background:var(--green-l);border-color:#bbf7d0;color:var(--green);}
+
+/* ── PLAYER DETAIL ── */
+.detail-hero{background:linear-gradient(135deg,var(--blue),var(--blue-d));padding:24px;display:flex;gap:18px;align-items:center;}
+.detail-ava{width:70px;height:70px;border-radius:18px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;border:2px solid rgba(255,255,255,.3);flex-shrink:0;}
+.detail-name{font-size:22px;font-weight:800;color:#fff;}
+.detail-role{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;}
+.detail-tags{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.detail-tag{background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.25);}
+.detail-stats{margin-left:auto;display:flex;gap:24px;flex-shrink:0;}
+.ds-item{text-align:center;}
+.ds-num{font-family:'Instrument Serif',serif;font-size:30px;color:#fff;line-height:1;}
+.ds-lbl{font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
+
+/* ── NOTE BOX ── */
+.note-box{background:var(--blue-l);border:1px solid var(--blue-m);border-radius:var(--r-sm);padding:12px 16px;font-size:13px;font-style:italic;color:var(--ink2);line-height:1.6;}
+.note-meta{font-size:11px;color:var(--ink3);font-style:normal;margin-top:6px;}
+
+/* ── RECOVERY SLIDER ── */
+.recovery-item{margin-bottom:14px;}
+.recovery-item:last-child{margin-bottom:0;}
+.recovery-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.recovery-label{font-size:13px;font-weight:600;}
+.recovery-pct{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;}
+
+/* ── CHECKIN CARD ── */
+.checkin-card{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:var(--r);padding:24px;color:#fff;margin-bottom:18px;}
+.checkin-title{font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:6px;}
+.checkin-sub{font-size:13px;opacity:.7;margin-bottom:20px;}
+.mood-strip{display:flex;gap:8px;}
+.mood-btn{flex:1;aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:24px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);cursor:pointer;transition:.15s;}
+.mood-btn span{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);}
+.mood-btn.sel{border-color:#fff;background:rgba(255,255,255,.2);}
+.pain-row{margin-top:16px;}
+.pain-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.7;margin-bottom:8px;}
+.pain-scale{display:flex;gap:6px;}
+.pain-btn{flex:1;height:38px;border-radius:var(--r-sm);font-size:13px;font-weight:800;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;transition:.15s;}
+.pain-btn.sel{border-color:#fff;background:rgba(255,255,255,.25);}
+.checkin-submit{margin-top:16px;width:100%;padding:12px;border-radius:var(--r-sm);background:#fff;color:var(--blue);font-size:14px;font-weight:800;border:none;cursor:pointer;transition:.15s;}
+.checkin-submit:hover{background:var(--blue-l);}
+
+/* ── TABS INSIDE PAGE ── */
+.inner-tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.inner-tab{padding:10px 16px;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2.5px solid transparent;cursor:pointer;transition:.15s;background:none;border-left:none;border-right:none;border-top:none;margin-bottom:-1px;}
+.inner-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* ── RESPONSIVE HELPERS ── */
+@media(max-width:768px){
+  .main{padding:16px;}
+  .header{padding:0 16px;}
+  .nav-tab{padding:12px 14px;font-size:13px;}
+  .detail-stats{display:none;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  th,td{padding:10px 12px;}
+}
+</style>
+</head>
+<body>
+<!-- SETUP SCREEN -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;z-index:500;min-height:100vh;background:#f9fafb;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.10);max-width:560px;width:100%;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#1a56db,#1140a8);padding:28px 32px 24px;">
+      <div style="font-size:32px;margin-bottom:8px;">🏥</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:26px;color:#fff;margin-bottom:4px;">InjuryTrack</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);">FC Bagnols Pont — Configuration initiale</div>
+    </div>
+    <div style="padding:28px 32px;">
+      <h2 style="font-size:16px;font-weight:800;margin-bottom:6px;">Connexion à Supabase</h2>
+      <p style="font-size:13px;color:#6b7280;margin-bottom:20px;line-height:1.6;">Supabase est une base de données gratuite en ligne. Vos données seront sauvegardées et accessibles depuis n'importe quel appareil.</p>
+
+      <div style="background:#eff4ff;border:1px solid #c3d5f7;border-radius:10px;padding:16px 18px;margin-bottom:20px;font-size:13px;color:#374151;line-height:1.7;">
+        <strong style="display:block;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:#1a56db;">📋 Instructions (5 minutes)</strong>
+        <b>1.</b> Créez un compte gratuit sur <a href="https://supabase.com" target="_blank" style="color:#1a56db;font-weight:700;">supabase.com</a><br>
+        <b>2.</b> Créez un nouveau projet (notez votre région → choisissez EU West)<br>
+        <b>3.</b> Dans <b>SQL Editor</b>, exécutez cette requête :<br>
+        <code style="display:block;background:#1e293b;color:#7dd3fc;padding:10px 14px;border-radius:8px;margin:8px 0;font-size:12px;white-space:pre-wrap;">CREATE TABLE injurytrack (
+  id integer PRIMARY KEY,
+  data jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE injurytrack ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_access" ON injurytrack
+  FOR ALL USING (true) WITH CHECK (true);
+-- Active la synchronisation temps réel
+ALTER PUBLICATION supabase_realtime ADD TABLE injurytrack;</code>
+        <b>4.</b> Dans <b>Settings → API</b>, copiez l'URL du projet et la clé <code>anon/public</code>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#6b7280;display:block;margin-bottom:5px;">URL du projet Supabase *</label>
+          <input id="setup-url" type="url" placeholder="https://xxxxxxxxxxx.supabase.co" style="width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:14px;color:#111827;outline:none;" onfocus="this.style.borderColor='#1a56db'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#6b7280;display:block;margin-bottom:5px;">Clé API anon/public *</label>
+          <input id="setup-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…" style="width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:14px;color:#111827;outline:none;" onfocus="this.style.borderColor='#1a56db'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+      </div>
+      <div id="setup-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;min-height:18px;line-height:1.5;"></div>
+      <button id="setup-btn" onclick="submitSetup()" style="width:100%;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;">Se connecter →</button>
+      <div style="text-align:center;margin-top:14px;">
+        <button onclick="skipSetup()" style="background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;text-decoration:underline;">Continuer sans Supabase (données locales uniquement)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARAMÈTRES -->
+<div class="modal-ov" id="modal-settings">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Paramètres Supabase</div>
+      <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+        <div class="fg">
+          <label>URL du projet Supabase</label>
+          <input class="fi" id="settings-url" type="url" placeholder="https://xxxxxxxxxxx.supabase.co">
+        </div>
+        <div class="fg">
+          <label>Clé API anon/public</label>
+          <input class="fi" id="settings-key" type="password" placeholder="eyJhbGci…">
+        </div>
+      </div>
+      <div id="settings-status" style="font-size:13px;font-weight:600;margin-bottom:14px;padding:8px 12px;background:#f3f4f6;border-radius:8px;"></div>
+      <div class="form-actions" style="justify-content:space-between;">
+        <button class="btn btn-danger btn-sm" onclick="resetConfig()">🗑 Réinitialiser</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline" onclick="closeModal('modal-settings')">Annuler</button>
+          <button class="btn btn-primary" onclick="saveSettings()">Enregistrer ✓</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-main" style="display:flex;flex-direction:column;min-height:100vh;" class="app">
+  <div id="toast"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🏥</div>
+      <div>
+        <div class="logo-text">InjuryTrack</div>
+        <div class="logo-sub">FC Bagnols Pont</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="sync-indicator">
+        <div class="sync-dot"></div>
+        <span id="sync-label">Synchronisé</span>
+        <span class="last-sync" id="last-sync-time"></span>
+      </div>
+      <button onclick="openSettings()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;" title="Paramètres Supabase">⚙️ Config</button>
+    </div>
+  </header>
+
+  <!-- SYNC BAR -->
+  <div class="sync-bar" id="sync-bar" style="display:none"></div>
+
+  <!-- NAV TABS -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard',this)">📊 Tableau de bord</button>
+    <button class="nav-tab" onclick="showPage('joueurs',this)">👥 Joueurs <span id="nb-joueurs" style="font-size:11px;color:var(--ink4);margin-left:2px"></span></button>
+    <button class="nav-tab" onclick="showPage('blessures',this)">🩹 Blessures <span class="tab-badge" id="nb-blessures" style="display:none">0</span></button>
+    <button class="nav-tab" onclick="showPage('checkin',this)">📋 Check-in joueurs</button>
+    <button class="nav-tab" onclick="showPage('charge',this)">⚡ Charge</button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ══ PAGE: DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⚠️ Alertes actives</div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-injury')">+ Déclarer blessure</button>
+            </div>
+            <div class="card-body" id="alert-zone"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🩹 Blessures en cours</div></div>
+            <div class="card-body" id="dash-injuries"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">📋 Check-ins du jour</div></div>
+            <div class="card-body" id="dash-checkins"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🕐 Activité récente</div></div>
+            <div class="card-body"><div class="tl" id="activity-log"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: JOUEURS ══ -->
+    <div class="page" id="page-joueurs">
+      <div class="search-row">
+        <input class="search-input" placeholder="🔍 Rechercher un joueur…" id="player-search" oninput="renderJoueurs()">
+        <div class="filter-pills" id="filter-pills">
+          <button class="pill on" onclick="setFilter('tous',this)">Tous</button>
+          <button class="pill" onclick="setFilter('blessé',this)">🩹 Blessés</button>
+          <button class="pill" onclick="setFilter('dispo',this)">✅ Dispos</button>
+          <button class="pill" onclick="setFilter('G',this)">G</button>
+          <button class="pill" onclick="setFilter('DC',this)">DC</button>
+          <button class="pill" onclick="setFilter('MD',this)">MD</button>
+          <button class="pill" onclick="setFilter('AC',this)">AC</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-player')">+ Ajouter joueur</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Joueur</th><th>Poste</th><th>N°</th><th>Statut</th><th>Blessure active</th><th>Charge sem.</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="joueurs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: BLESSURES ══ -->
+    <div class="page" id="page-blessures">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="inner-tabs">
+          <button class="inner-tab active" onclick="setBlessureTab('actives',this)">En cours</button>
+          <button class="inner-tab" onclick="setBlessureTab('resolues',this)">Résolues</button>
+          <button class="inner-tab" onclick="setBlessureTab('toutes',this)">Toutes</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-injury')">+ Déclarer une blessure</button>
+      </div>
+      <div id="blessures-content"></div>
+    </div>
+
+    <!-- ══ PAGE: CHECKIN ══ -->
+    <div class="page" id="page-checkin">
+      <div class="grid-2">
+        <div>
+          <div class="checkin-card">
+            <div class="checkin-title">Check-in du jour</div>
+            <div class="checkin-sub">Sélectionne un joueur et saisis son état du moment</div>
+            <div class="fg" style="margin-bottom:16px">
+              <label style="color:rgba(255,255,255,.7)">Joueur</label>
+              <select class="fs" id="ci-player" style="background:#1e3a5f;border-color:rgba(255,255,255,.2);color:#fff">
+                <option value="">Sélectionner un joueur…</option>
+              </select>
+            </div>
+            <div style="margin-bottom:16px">
+              <div class="pain-label">Comment il se sent aujourd'hui ?</div>
+              <div class="mood-strip" id="ci-mood-strip">
+                <button class="mood-btn" onclick="selMood(this,1)">😣<span>Très mal</span></button>
+                <button class="mood-btn" onclick="selMood(this,2)">😕<span>Mal</span></button>
+                <button class="mood-btn" onclick="selMood(this,3)">😐<span>Moyen</span></button>
+                <button class="mood-btn" onclick="selMood(this,4)">🙂<span>Bien</span></button>
+                <button class="mood-btn" onclick="selMood(this,5)">💪<span>Top!</span></button>
+              </div>
+            </div>
+            <div class="pain-row">
+              <div class="pain-label">Niveau de douleur (0 = aucune, 5 = intense)</div>
+              <div class="pain-scale" id="ci-pain-scale">
+                <button class="pain-btn" onclick="selPain(this,0)">0</button>
+                <button class="pain-btn" onclick="selPain(this,1)">1</button>
+                <button class="pain-btn" onclick="selPain(this,2)">2</button>
+                <button class="pain-btn" onclick="selPain(this,3)">3</button>
+                <button class="pain-btn" onclick="selPain(this,4)">4</button>
+                <button class="pain-btn" onclick="selPain(this,5)">5</button>
+              </div>
+            </div>
+            <div class="fg" style="margin-top:14px">
+              <label style="color:rgba(255,255,255,.7)">Note (optionnel)</label>
+              <textarea class="fta" id="ci-note" placeholder="Observation, douleur localisée…" style="background:#1e3a5f;border-color:rgba(255,255,255,.2);color:#fff;min-height:60px"></textarea>
+            </div>
+            <button class="checkin-submit" onclick="saveCheckin()">Enregistrer le check-in ✓</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Check-ins du jour</div><span id="ci-count" style="font-size:13px;color:var(--ink3)">0 / 0</span></div>
+            <div class="card-body" id="checkins-today" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-header"><div class="card-title">Historique des check-ins</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Joueur</th><th>Humeur</th><th>Douleur</th><th>Note</th></tr></thead>
+            <tbody id="checkins-history"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: CHARGE ══ -->
+    <div class="page" id="page-charge">
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⚡ Charge hebdomadaire</div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-charge')">+ Saisir charge</button>
+            </div>
+            <div class="card-body" id="charge-list"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🤖 IA — Risques de blessure</div><span class="badge b-blue" style="font-size:10px">Analyse automatique</span></div>
+            <div class="card-body">
+              <div class="alert blue"><span class="alert-icon">🤖</span><div style="font-size:12px">Basée sur la charge, l'historique de blessures et les check-ins récents.</div></div>
+              <div id="ai-risks" style="margin-top:12px;display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:18px">
+            <div class="card-header"><div class="card-title">Alertes surcharge</div></div>
+            <div class="card-body" id="charge-alerts" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ MODAL: AJOUTER JOUEUR ══ -->
+<div class="modal-ov" id="modal-player">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-player-title">Ajouter un joueur</div>
+      <button class="modal-close" onclick="closeModal('modal-player')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-player-id">
+      <div class="form-grid">
+        <div class="fg"><label>Prénom *</label><input class="fi" id="p-prenom" placeholder="Kofi"></div>
+        <div class="fg"><label>Nom *</label><input class="fi" id="p-nom" placeholder="Mboup"></div>
+        <div class="fg"><label>Date de naissance</label><input class="fi" type="date" id="p-dob"></div>
+        <div class="fg"><label>N° maillot *</label><input class="fi" type="number" id="p-num" placeholder="8" min="1" max="99"></div>
+        <div class="fg"><label>Poste *</label>
+          <select class="fs" id="p-pos">
+            <option value="G">Gardien (G)</option>
+            <option value="DD">Défenseur droit (DD)</option>
+            <option value="DC">Défenseur central (DC)</option>
+            <option value="DG">Défenseur gauche (DG)</option>
+            <option value="MD">Milieu défensif (MD)</option>
+            <option value="MC">Milieu central (MC)</option>
+            <option value="MO">Milieu offensif (MO)</option>
+            <option value="AD">Ailier droit (AD)</option>
+            <option value="AG">Ailier gauche (AG)</option>
+            <option value="AC">Attaquant centre (AC)</option>
+          </select>
+        </div>
+        <div class="fg"><label>Pied fort</label>
+          <select class="fs" id="p-foot"><option value="D">Droit</option><option value="G">Gauche</option><option value="B">Les deux</option></select>
+        </div>
+        <div class="fg"><label>Poids (kg)</label><input class="fi" type="number" id="p-poids" placeholder="74"></div>
+        <div class="fg"><label>Taille (cm)</label><input class="fi" type="number" id="p-taille" placeholder="178"></div>
+        <div class="fg"><label>Email</label><input class="fi" type="email" id="p-email" placeholder="prenom.nom@fcbagnols.fr"></div>
+        <div class="fg"><label>Téléphone</label><input class="fi" type="tel" id="p-tel" placeholder="+33 6 …"></div>
+        <div class="fg"><label>Groupe sanguin</label>
+          <select class="fs" id="p-blood"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+        </div>
+        <div class="fg"><label>Licence FFF</label><input class="fi" id="p-licence" placeholder="1234567A"></div>
+        <div class="fg full"><label>Allergies / Antécédents médicaux</label><textarea class="fta" id="p-allergies" placeholder="Pénicilline, asthme…" style="min-height:60px"></textarea></div>
+        <div class="fg"><label>Médecin traitant</label><input class="fi" id="p-medecin" placeholder="Dr. …"></div>
+        <div class="fg"><label>Contact urgence (nom + tél)</label><input class="fi" id="p-urgence" placeholder="Mme Mboup — 06 …"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-player')">Annuler</button>
+        <button class="btn btn-primary" id="save-player-btn" onclick="savePlayer()">Enregistrer le joueur ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: DÉCLARER BLESSURE ══ -->
+<div class="modal-ov" id="modal-injury">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-injury-title">Déclarer une blessure</div>
+      <button class="modal-close" onclick="closeModal('modal-injury')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-injury-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Joueur *</label>
+          <select class="fs" id="i-player"><option value="">Sélectionner un joueur…</option></select>
+        </div>
+        <div class="fg"><label>Type de blessure *</label>
+          <select class="fs" id="i-type"><option>Musculaire</option><option>Ligamentaire</option><option>Osseuse</option><option>Contusion</option><option>Tendineuse</option><option>Autre</option></select>
+        </div>
+        <div class="fg"><label>Sévérité *</label>
+          <select class="fs" id="i-severity"><option value="low">Faible (1–7 jours)</option><option value="med">Moyenne (7–21 jours)</option><option value="high">Haute (21 jours +)</option></select>
+        </div>
+        <div class="fg"><label>Zone du corps *</label>
+          <select class="fs" id="i-zone">
+            <option>Cuisse gauche</option><option>Cuisse droite</option>
+            <option>Genou gauche</option><option>Genou droit</option>
+            <option>Cheville gauche</option><option>Cheville droite</option>
+            <option>Pied gauche</option><option>Pied droit</option>
+            <option>Épaule gauche</option><option>Épaule droite</option>
+            <option>Dos / rachis</option><option>Côtes</option>
+            <option>Mollet gauche</option><option>Mollet droit</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div class="fg"><label>Date de survenue *</label><input class="fi" type="date" id="i-date"></div>
+        <div class="fg"><label>Durée estimée (jours) *</label><input class="fi" type="number" id="i-duration" placeholder="14" min="1"></div>
+        <div class="fg full"><label>Diagnostic</label><input class="fi" id="i-diag" placeholder="Ex: Déchirure partielle ischio-jambier…"></div>
+        <div class="fg full"><label>Notes médicales</label><textarea class="fta" id="i-notes" placeholder="Observations, protocole de soin, recommandations…"></textarea></div>
+        <div class="fg"><label>Kiné prescrit</label>
+          <select class="fs" id="i-kine"><option value="Non">Pas nécessaire</option><option value="1x/sem">1 séance / semaine</option><option value="2x/sem">2 séances / semaine</option><option value="3x/sem">3 séances / semaine</option><option value="Quotidien">Quotidien</option></select>
+        </div>
+        <div class="fg"><label>Progression récupération (%)</label><input class="fi" type="number" id="i-progress" placeholder="5" min="0" max="100" value="5"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-injury')">Annuler</button>
+        <button class="btn btn-primary" id="save-injury-btn" onclick="saveInjury()">Enregistrer ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: SAISIR CHARGE ══ -->
+<div class="modal-ov" id="modal-charge">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Saisir la charge hebdomadaire</div>
+      <button class="modal-close" onclick="closeModal('modal-charge')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Joueur *</label>
+          <select class="fs" id="ch-player"><option value="">Sélectionner…</option></select>
+        </div>
+        <div class="fg"><label>Semaine</label><input class="fi" type="week" id="ch-week"></div>
+        <div class="fg"><label>Charge (% du seuil max)</label><input class="fi" type="number" id="ch-load" placeholder="75" min="0" max="100"></div>
+        <div class="fg full"><label>Minutes d'entraînement</label><input class="fi" type="number" id="ch-mins" placeholder="420" min="0"></div>
+        <div class="fg full"><label>Note</label><textarea class="fta" id="ch-note" placeholder="Observations sur la semaine…" style="min-height:60px"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="closeModal('modal-charge')">Annuler</button>
+        <button class="btn btn-primary" onclick="saveCharge()">Enregistrer ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: FICHE JOUEUR ══ -->
+<div class="modal-ov" id="modal-profil">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header" style="padding:0;border:none">
+      <button class="modal-close" onclick="closeModal('modal-profil')" style="position:absolute;top:16px;right:16px;z-index:10;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);color:#fff">✕</button>
+    </div>
+    <div id="profil-content"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DONNÉES GLOBALES
+// ══════════════════════════════════════════
+let DATA = { players: [], injuries: [], checkins: [], charges: [], activity: [] };
+let filterStatus = 'tous';
+let blessureTab = 'actives';
+
+// ══════════════════════════════════════════
+// CONFIG SUPABASE
+// ══════════════════════════════════════════
+const LS_CONFIG = 'injurytrack-config';
+const LS_DATA   = 'injurytrack-data-local';
+let SB_URL = '', SB_KEY = '';
+
+function loadConfig() {
+  try { const c = JSON.parse(localStorage.getItem(LS_CONFIG)||'{}'); SB_URL=c.url||''; SB_KEY=c.key||''; } catch(e){}
+}
+function saveConfig(url, key) {
+  SB_URL = url.replace(/\/$/, ''); SB_KEY = key;
+  localStorage.setItem(LS_CONFIG, JSON.stringify({url:SB_URL, key:SB_KEY}));
+}
+function hasConfig() { return !!(SB_URL && SB_KEY); }
+
+// ══════════════════════════════════════════
+// SUPABASE REST
+// ══════════════════════════════════════════
+const DATA_ROW_ID = 1;
+let realtimeWS = null, saveDebounceTimer = null, isSaving = false;
+
+async function sbFetch(method, table, body=null, query='') {
+  const h = { 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json' };
+  if (method==='POST')  h['Prefer']='resolution=merge-duplicates,return=representation';
+  if (method==='PATCH') h['Prefer']='return=representation';
+  const res = await fetch(SB_URL+'/rest/v1/'+table+query, {method, headers:h, body:body?JSON.stringify(body):undefined});
+  if (!res.ok) { const t=await res.text(); throw new Error(method+' '+table+': '+t); }
+  const ct = res.headers.get('content-type')||'';
+  return ct.includes('json') ? res.json() : null;
+}
+
+// ══════════════════════════════════════════
+// REALTIME
+// ══════════════════════════════════════════
+function startRealtime() {
+  if (!hasConfig()) return;
+  if (realtimeWS) try { realtimeWS.close(); } catch(e){}
+  const ws = SB_URL.replace('https://','wss://').replace('http://','ws://')+'/realtime/v1/websocket?apikey='+SB_KEY+'&vsn=1.0.0';
+  try {
+    realtimeWS = new WebSocket(ws);
+    realtimeWS.onopen = () => {
+      realtimeWS.send(JSON.stringify({topic:'realtime:public:injurytrack',event:'phx_join',
+        payload:{config:{postgres_changes:[{event:'UPDATE',schema:'public',table:'injurytrack'}]}},ref:'1'}));
+      setOnlineStatus(true);
+    };
+    realtimeWS.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        const rec = msg.payload?.data?.record;
+        if (rec?.data && !isSaving) {
+          DATA = {...DATA, ...rec.data};
+          localStorage.setItem(LS_DATA, JSON.stringify(DATA));
+          renderAll(); updateSyncTime();
+          showToast('🔄 Sync — données mises à jour');
+        }
+      } catch(err){}
+    };
+    realtimeWS.onerror = () => setOnlineStatus(false);
+    realtimeWS.onclose = () => { setOnlineStatus(false); setTimeout(()=>{ if(hasConfig()) startRealtime(); },8000); };
+  } catch(e) { console.warn('WS failed',e); }
+}
+
+function setOnlineStatus(online) {
+  const dot = document.querySelector('.sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (dot) dot.style.background = online ? '#4ade80' : '#f87171';
+  if (lbl) lbl.textContent = online ? 'Synchronisé' : 'Local';
+}
+
+// ══════════════════════════════════════════
+// LOAD — données TOUJOURS affichées en premier
+// ══════════════════════════════════════════
+async function loadData() {
+  loadConfig();
+
+  // 1. Données de démo en base (jamais vide)
+  initSampleData();
+
+  // 2. Si localStorage a des données plus récentes (modifs locales), on les prend
+  try {
+    const raw = localStorage.getItem(LS_DATA);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.players && parsed.players.length > 0) DATA = {...DATA, ...parsed};
+    }
+  } catch(e){}
+
+  // 3. Affichage IMMÉDIAT — quoi qu'il arrive
+  renderAll();
+  updateSyncTime();
+  hideSyncBar();
+  setOnlineStatus(false);
+
+  // 4. Supabase en arrière-plan, silencieux, ne touche JAMAIS à l'affichage si erreur
+  if (!hasConfig()) return;
+  syncSupabase();
+}
+
+async function syncSupabase() {
+  try {
+    const rows = await sbFetch('GET','injurytrack',null,`?id=eq.${DATA_ROW_ID}&select=data`);
+    if (rows && rows.length > 0 && rows[0].data) {
+      const cloud = rows[0].data;
+      if (cloud.players && cloud.players.length > 0) {
+        DATA = {...DATA, ...cloud};
+        localStorage.setItem(LS_DATA, JSON.stringify(DATA));
+        renderAll(); updateSyncTime();
+      }
+    } else {
+      // Table vide → on pousse les données locales
+      await sbFetch('POST','injurytrack',{id:DATA_ROW_ID, data:DATA, updated_at:new Date().toISOString()});
+    }
+    setOnlineStatus(true);
+    startRealtime();
+  } catch(e) {
+    // Échec silencieux — les données locales restent affichées
+    console.warn('Supabase sync:', e.message);
+    setTimeout(()=>{ if(hasConfig()) syncSupabase(); }, 20000);
+  }
+}
+
+// ══════════════════════════════════════════
+// SAVE
+// ══════════════════════════════════════════
+async function saveData() {
+  // Local IMMÉDIAT
+  localStorage.setItem(LS_DATA, JSON.stringify(DATA));
+  updateSyncTime();
+  if (!hasConfig()) return true;
+
+  // Cloud avec debounce
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(async () => {
+    isSaving = true;
+    try {
+      const res = await sbFetch('PATCH','injurytrack',{data:DATA,updated_at:new Date().toISOString()},`?id=eq.${DATA_ROW_ID}`);
+      if (Array.isArray(res) && res.length===0) {
+        await sbFetch('POST','injurytrack',{id:DATA_ROW_ID,data:DATA,updated_at:new Date().toISOString()});
+      }
+      setOnlineStatus(true);
+    } catch(e) {
+      console.warn('save cloud:', e.message);
+    } finally { isSaving = false; }
+  }, 800);
+  return true;
+}
+
+// Ping silencieux toutes les 60s
+setInterval(async()=>{
+  if(!hasConfig()) return;
+  try { await sbFetch('GET','injurytrack',null,'?id=eq.1&select=id'); setOnlineStatus(true); }
+  catch(e){ setOnlineStatus(false); }
+}, 60000);
+
+function updateSyncTime() {
+  const now = new Date();
+  const t = now.toTimeString().slice(0,5);
+  const el = document.getElementById('last-sync-time');
+  if (el) el.textContent = '· ' + t;
+}
+
+function showSyncBar(msg, type='blue') {
+  const bar = document.getElementById('sync-bar');
+  if (!bar) return;
+  bar.textContent = msg;
+  bar.className = 'sync-bar ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
+  bar.style.display = 'flex';
+}
+function hideSyncBar() {
+  const bar = document.getElementById('sync-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// ÉCRAN DE CONFIGURATION SUPABASE
+// ══════════════════════════════════════════
+function showSetupScreen() {
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('setup-screen').style.background = 'rgba(17,24,39,0.6)';
+  document.getElementById('setup-screen').style.backdropFilter = 'blur(4px)';
+  document.getElementById('setup-screen').style.alignItems = 'center';
+  document.getElementById('setup-screen').style.justifyContent = 'center';
+  document.getElementById('setup-screen').style.padding = '24px';
+}
+function hideSetupScreen() {
+  document.getElementById('setup-screen').style.display = 'none';
+}
+
+async function submitSetup() {
+  const url = document.getElementById('setup-url').value.trim();
+  const key = document.getElementById('setup-key').value.trim();
+  const btn = document.getElementById('setup-btn');
+  const err = document.getElementById('setup-error');
+  if (!url || !key) { err.textContent = 'Remplissez les deux champs.'; return; }
+  if (!url.includes('supabase.co')) { err.textContent = "L'URL doit ressembler à https://xxxx.supabase.co"; return; }
+  btn.textContent = '⏳ Test de connexion…';
+  btn.disabled = true;
+  err.textContent = '';
+  saveConfig(url, key);
+  try {
+    const rows = await sbFetch('GET', 'injurytrack', null, '?limit=1');
+    // Connexion OK
+    hideSetupScreen();
+    await loadData();
+    showToast('✅ Connexion Supabase réussie ! Données chargées.');
+  } catch(e) {
+    let msg = e.message || '';
+    let hint = '';
+    if (msg.includes('relation') || msg.includes('does not exist') || msg.includes('42P01')) {
+      hint = "<br><br>⚠️ <b>La table n'existe pas encore.</b> Exécutez le SQL ci-dessus dans <b>Supabase → SQL Editor</b>, puis réessayez.";
+    } else if (msg.includes('401') || msg.includes('Invalid API key') || msg.includes('403')) {
+      hint = '<br><br>⚠️ <b>Clé API invalide.</b> Vérifiez que vous avez copié la clé <b>anon/public</b> (pas la clé service_role).';
+    } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      hint = "<br><br>⚠️ <b>Impossible de contacter Supabase.</b> Vérifiez votre connexion internet et l'URL du projet.";
+    } else {
+      hint = "<br><br>Vérifiez l'URL et la clé, puis assurez-vous d'avoir créé la table.";
+    }
+    err.innerHTML = `<b>Erreur :</b> ${msg}${hint}`;
+    btn.textContent = 'Réessayer';
+    btn.disabled = false;
+  }
+}
+
+function openSettings() {
+  loadConfig();
+  document.getElementById('settings-url').value = SB_URL;
+  document.getElementById('settings-key').value = SB_KEY;
+  document.getElementById('settings-status').textContent = hasConfig() ? '✅ Supabase configuré' : '⚠️ Pas encore configuré — mode local uniquement';
+  document.getElementById('modal-settings').classList.add('open');
+}
+
+async function saveSettings() {
+  const url = document.getElementById('settings-url').value.trim();
+  const key = document.getElementById('settings-key').value.trim();
+  const status = document.getElementById('settings-status');
+  if (!url || !key) { showToast('⚠️ Champs requis'); return; }
+  status.textContent = '⏳ Test de connexion…';
+  saveConfig(url, key);
+  try {
+    await sbFetch('GET', 'injurytrack', null, '?limit=1');
+    status.textContent = '';
+    document.getElementById('modal-settings').classList.remove('open');
+    if (realtimeWS) realtimeWS.close();
+    await loadData();
+    showToast('✅ Configuration mise à jour — connexion réussie');
+  } catch(e) {
+    status.innerHTML = '<span style="color:#dc2626">❌ Connexion échouée : ' + (e.message || e) + '</span>';
+  }
+}
+
+function resetConfig() {
+  if (!confirm('Réinitialiser la configuration ? Les données locales seront effacées.')) return;
+  localStorage.removeItem(LS_CONFIG);
+  localStorage.removeItem('injurytrack-data-local');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// SAMPLE DATA
+// ══════════════════════════════════════════
+const COLORS = ['#c62828','#ef6c00','#558b2f','#0d47a1','#4a148c','#00695c','#ad1457','#4527a0','#00838f','#6d4c41','#1565c0','#2e7d32'];
+
+function initSampleData() {
+  DATA.players = [
+    {id:'p1',prenom:'Julien',nom:'Fabre',pos:'G',num:1,dob:'1994-05-12',poids:86,taille:191,blood:'A+',email:'julien.fabre@fcbagnolspont.fr',tel:'+33612345601',licence:'1000001A',allergies:'Aucune',medecin:'Dr. Rouquier',urgence:'Mme Fabre — 06 10 20 30 40',foot:'D',color:COLORS[0]},
+    {id:'p2',prenom:'Théo',nom:'Achard',pos:'G',num:16,dob:'2002-09-28',poids:83,taille:188,blood:'O+',email:'theo.achard@fcbagnolspont.fr',tel:'',licence:'1000002B',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[1]},
+    {id:'p3',prenom:'Mathieu',nom:'Raynal',pos:'DD',num:2,dob:'1997-03-04',poids:78,taille:180,blood:'B+',email:'mathieu.raynal@fcbagnolspont.fr',tel:'',licence:'1000003C',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[2]},
+    {id:'p4',prenom:'Sébastien',nom:'Causse',pos:'DC',num:5,dob:'1995-11-17',poids:84,taille:186,blood:'A-',email:'sebastien.causse@fcbagnolspont.fr',tel:'',licence:'1000004D',allergies:'Aspirine',medecin:'Dr. Rouquier',urgence:'M. Causse — 06 11 21 31 41',foot:'D',color:COLORS[3]},
+    {id:'p5',prenom:'Nicolas',nom:'Blanc',pos:'DC',num:4,dob:'1993-07-22',poids:82,taille:184,blood:'O-',email:'nicolas.blanc@fcbagnolspont.fr',tel:'',licence:'1000005E',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[4]},
+    {id:'p6',prenom:'Antony',nom:'Vidal',pos:'DG',num:3,dob:'1999-02-09',poids:76,taille:178,blood:'AB+',email:'antony.vidal@fcbagnolspont.fr',tel:'',licence:'1000006F',allergies:'Aucune',medecin:'',urgence:'',foot:'G',color:COLORS[5]},
+    {id:'p7',prenom:'Kevin',nom:'Mouret',pos:'DD',num:17,dob:'2001-06-15',poids:74,taille:176,blood:'A+',email:'kevin.mouret@fcbagnolspont.fr',tel:'',licence:'1000007G',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[6]},
+    {id:'p8',prenom:'Florian',nom:'Gras',pos:'MD',num:6,dob:'1998-04-30',poids:77,taille:179,blood:'B-',email:'florian.gras@fcbagnolspont.fr',tel:'',licence:'1000008H',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[7]},
+    {id:'p9',prenom:'Romain',nom:'Pons',pos:'MC',num:8,dob:'1996-12-03',poids:73,taille:177,blood:'O+',email:'romain.pons@fcbagnolspont.fr',tel:'+33612345609',licence:'1000009I',allergies:'Pénicilline',medecin:'Dr. Rouquier',urgence:'Mme Pons — 06 12 22 32 42',foot:'D',color:COLORS[8]},
+    {id:'p10',prenom:'Axel',nom:'Durand',pos:'MC',num:14,dob:'2000-08-19',poids:71,taille:175,blood:'A+',email:'axel.durand@fcbagnolspont.fr',tel:'',licence:'1000010J',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[9]},
+    {id:'p11',prenom:'Clément',nom:'Roux',pos:'MO',num:10,dob:'1997-01-25',poids:69,taille:173,blood:'B+',email:'clement.roux@fcbagnolspont.fr',tel:'',licence:'1000011K',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[10]},
+    {id:'p12',prenom:'Baptiste',nom:'Teissier',pos:'MD',num:15,dob:'2003-05-07',poids:75,taille:180,blood:'O+',email:'baptiste.teissier@fcbagnolspont.fr',tel:'',licence:'1000012L',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[11]},
+    {id:'p13',prenom:'Hugo',nom:'Salles',pos:'MO',num:19,dob:'2001-10-14',poids:70,taille:174,blood:'A-',email:'hugo.salles@fcbagnolspont.fr',tel:'',licence:'1000013M',allergies:'Aucune',medecin:'',urgence:'',foot:'G',color:COLORS[0]},
+    {id:'p14',prenom:'Yann',nom:'Pellet',pos:'AD',num:7,dob:'1998-03-21',poids:72,taille:176,blood:'B+',email:'yann.pellet@fcbagnolspont.fr',tel:'',licence:'1000014N',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[1]},
+    {id:'p15',prenom:'Dylan',nom:'Combes',pos:'AG',num:11,dob:'1999-07-08',poids:70,taille:172,blood:'O+',email:'dylan.combes@fcbagnolspont.fr',tel:'',licence:'1000015O',allergies:'Aucune',medecin:'',urgence:'',foot:'G',color:COLORS[2]},
+    {id:'p16',prenom:'Maxime',nom:'Bonnet',pos:'AC',num:9,dob:'1995-09-16',poids:81,taille:182,blood:'A+',email:'maxime.bonnet@fcbagnolspont.fr',tel:'+33612345616',licence:'1000016P',allergies:'Aucune',medecin:'Dr. Rouquier',urgence:'M. Bonnet — 06 13 23 33 43',foot:'D',color:COLORS[3]},
+    {id:'p17',prenom:'Enzo',nom:'Maurin',pos:'AC',num:18,dob:'2002-12-01',poids:78,taille:181,blood:'AB-',email:'enzo.maurin@fcbagnolspont.fr',tel:'',licence:'1000017Q',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[4]},
+    {id:'p18',prenom:'Tom',nom:'Ferrandez',pos:'AD',num:22,dob:'2000-04-11',poids:68,taille:171,blood:'O+',email:'tom.ferrandez@fcbagnolspont.fr',tel:'',licence:'1000018R',allergies:'Aucune',medecin:'',urgence:'',foot:'D',color:COLORS[5]},
+    {id:'p19',prenom:'Loïc',nom:'Sabatier',pos:'AG',num:13,dob:'1996-08-27',poids:73,taille:175,blood:'B+',email:'loic.sabatier@fcbagnolspont.fr',tel:'',licence:'1000019S',allergies:'Aucune',medecin:'',urgence:'',foot:'G',color:COLORS[6]},
+  ];
+  DATA.injuries = [
+    {id:'i1',playerId:'p9',type:'Musculaire',zone:'Cuisse gauche',severity:'high',date:'2026-03-14',duration:28,recovered:9,progress:35,diag:'Déchirure partielle ischio-jambier',notes:'Protocole kiné 2x/semaine. Reprise progressive sur vélo. IRM de contrôle prévu.',kine:'2x/sem',active:true,emoji:'🦵'},
+    {id:'i2',playerId:'p4',type:'Ligamentaire',zone:'Genou droit',severity:'high',date:'2026-03-10',duration:42,recovered:13,progress:30,diag:'Entorse LLI genou droit',notes:'Consultation spécialiste effectuée. Traitement conservateur. Attelle portée.',kine:'3x/sem',active:true,emoji:'🦵'},
+    {id:'i3',playerId:'p15',type:'Osseuse',zone:'Pied gauche',severity:'high',date:'2026-03-20',duration:45,recovered:3,progress:10,diag:'Fracture métatarse 5e',notes:'Radio confirmée. Chirurgie non nécessaire. Botte plâtrée 6 semaines.',kine:'Non',active:true,emoji:'🦴'},
+    {id:'i4',playerId:'p11',type:'Tendineuse',zone:'Cheville droite',severity:'med',date:'2026-03-17',duration:14,recovered:6,progress:55,diag:'Tendinite achilléenne droite',notes:'Repos relatif, kinésithérapie et glaçage. Reprise envisagée mi-avril.',kine:'2x/sem',active:true,emoji:'🦶'},
+    {id:'i5',playerId:'p7',type:'Contusion',zone:'Épaule droite',severity:'low',date:'2026-03-21',duration:7,recovered:2,progress:60,diag:'Contusion acromio-claviculaire légère',notes:'Choc lors du match contre Pont-Saint-Esprit. Douleur résiduelle légère.',kine:'1x/sem',active:true,emoji:'💪'},
+  ];
+  DATA.charges = [
+    {id:'ch1',playerId:'p16',week:'2026-W12',load:92,mins:500,note:'Semaine chargée — 2 matchs'},
+    {id:'ch2',playerId:'p8',week:'2026-W12',load:80,mins:420,note:''},
+    {id:'ch3',playerId:'p14',week:'2026-W12',load:76,mins:400,note:''},
+    {id:'ch4',playerId:'p1',week:'2026-W12',load:55,mins:300,note:''},
+    {id:'ch5',playerId:'p10',week:'2026-W12',load:63,mins:340,note:''},
+    {id:'ch6',playerId:'p13',week:'2026-W12',load:70,mins:380,note:'Attention charge croissante'},
+  ];
+  DATA.checkins = [];
+  DATA.activity = [
+    {type:'r',text:'Nouvelle blessure — D. Combes (fracture métatarse)',time:'Hier · 19:30'},
+    {type:'r',text:'Nouvelle blessure — K. Mouret (contusion épaule)',time:'Hier · 18:00'},
+    {type:'b',text:'Blessure R. Pons mise à jour — IRM programmé',time:'Hier · 11:15'},
+    {type:'o',text:'Charge M. Bonnet — 92% cette semaine',time:'Auj. · 08:45'},
+    {type:'g',text:'Effectif complet saisi — FC Bagnols Pont',time:'Auj. · 08:00'},
+  ];
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function getPlayer(id) { return DATA.players.find(p => p.id === id); }
+function getActiveInjury(pid) { return DATA.injuries.find(i => i.playerId === pid && i.active); }
+function getCharge(pid) {
+  const c = DATA.charges.filter(c => c.playerId === pid).sort((a,b) => b.week.localeCompare(a.week))[0];
+  return c ? c.load : 0;
+}
+function playerStatus(p) {
+  if (getActiveInjury(p.id)) return 'blessé';
+  const load = getCharge(p.id);
+  if (load >= 75) return 'surveillance';
+  return 'dispo';
+}
+function initials(p) { return (p.prenom[0] + p.nom[0]).toUpperCase(); }
+function ava(p, size=36) {
+  return `<div class="p-ava" style="background:${p.color};width:${size}px;height:${size}px;font-size:${size*0.33}px">${initials(p)}</div>`;
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+}
+function nowStr() { return new Date().toTimeString().slice(0,5); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function addActivity(type, text) {
+  DATA.activity.unshift({type, text, time: 'Auj. · ' + nowStr()});
+  if (DATA.activity.length > 20) DATA.activity.pop();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  if (page === 'joueurs') renderJoueurs();
+  if (page === 'blessures') renderBlessures();
+  if (page === 'checkin') renderCheckins();
+  if (page === 'charge') renderCharge();
+}
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-injury' || id === 'modal-charge') populatePlayerSelects();
+  if (id === 'modal-player') {
+    document.getElementById('edit-player-id').value = '';
+    document.getElementById('modal-player-title').textContent = 'Ajouter un joueur';
+    document.getElementById('save-player-btn').textContent = 'Enregistrer le joueur ✓';
+    clearPlayerForm();
+  }
+  if (id === 'modal-injury') {
+    document.getElementById('edit-injury-id').value = '';
+    document.getElementById('modal-injury-title').textContent = 'Déclarer une blessure';
+    document.getElementById('i-date').value = todayStr();
+    document.getElementById('i-progress').value = '5';
+  }
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-ov').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
+});
+
+function populatePlayerSelects() {
+  const players = DATA.players;
+  const opts = '<option value="">Sélectionner un joueur…</option>' + players.map(p => `<option value="${p.id}">${p.prenom} ${p.nom} (#${p.num})</option>`).join('');
+  ['i-player','ch-player'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+  const ciEl = document.getElementById('ci-player');
+  if (ciEl) ciEl.innerHTML = opts;
+}
+
+// ══════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════
+function renderAll() {
+  renderDashboard();
+  renderJoueurs();
+  renderBlessures();
+  renderCheckins();
+  renderCharge();
+  updateBadges();
+  populatePlayerSelects();
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard() {
+  renderKPIs();
+  renderAlerts();
+  renderDashInjuries();
+  renderDashCheckins();
+  renderActivity();
+}
+
+function renderKPIs() {
+  const active = DATA.injuries.filter(i => i.active);
+  const total = DATA.players.length;
+  const overloaded = DATA.charges.filter(c => c.load >= 75).length;
+  const dispos = total - active.length;
+  const today = todayStr();
+  const todayCheckins = DATA.checkins.filter(c => c.date === today).length;
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi red"><div class="kpi-icon">🤕</div><div class="kpi-label">Blessés</div><div class="kpi-value">${active.length}</div><div class="kpi-sub">sur ${total} joueurs</div></div>
+    <div class="kpi orange"><div class="kpi-icon">⚠️</div><div class="kpi-label">Surcharge</div><div class="kpi-value">${overloaded}</div><div class="kpi-sub">charge ≥ 75%</div></div>
+    <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-label">Disponibles</div><div class="kpi-value">${dispos}</div><div class="kpi-sub">pour le prochain match</div></div>
+    <div class="kpi blue"><div class="kpi-icon">📋</div><div class="kpi-label">Check-ins aujourd'hui</div><div class="kpi-value">${todayCheckins}</div><div class="kpi-sub">sur ${total} joueurs</div></div>`;
+}
+
+function renderAlerts() {
+  const el = document.getElementById('alert-zone');
+  if (!el) return;
+  let html = '';
+
+  // Surcharge alerts
+  DATA.charges.forEach(c => {
+    const p = getPlayer(c.playerId);
+    if (!p || c.load < 75) return;
+    html += `<div class="alert ${c.load >= 85 ? 'red' : 'orange'}">
+      <span class="alert-icon">${c.load >= 85 ? '🔴' : '🟡'}</span>
+      <div><strong>${c.load >= 85 ? 'Surcharge critique' : 'Surveillance'} :</strong> ${p.prenom} ${p.nom} — ${c.load}% du seuil.</div>
+    </div>`;
+  });
+
+  // Returning soon
+  DATA.injuries.filter(i => i.active && i.progress >= 80).forEach(i => {
+    const p = getPlayer(i.playerId);
+    if (p) html += `<div class="alert green"><span class="alert-icon">⏱</span><div><strong>Retour imminent :</strong> ${p.prenom} ${p.nom} — récupération à ${i.progress}%.</div></div>`;
+  });
+
+  // Checkin pain alerts
+  const today = todayStr();
+  DATA.checkins.filter(c => c.date === today && c.pain >= 3).forEach(c => {
+    const p = getPlayer(c.playerId);
+    if (p) html += `<div class="alert red"><span class="alert-icon">🚨</span><div><strong>Douleur signalée :</strong> ${p.prenom} ${p.nom} — niveau ${c.pain}/5 ce matin.</div></div>`;
+  });
+
+  if (!html) html = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">Aucune alerte active 🎉</div>';
+  el.innerHTML = html;
+}
+
+function renderDashInjuries() {
+  const el = document.getElementById('dash-injuries');
+  if (!el) return;
+  const active = DATA.injuries.filter(i => i.active);
+  if (!active.length) {
+    el.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-icon">🎉</div><div class="empty-title">Aucune blessure active !</div></div>';
+    return;
+  }
+  el.innerHTML = active.slice(0, 5).map(i => {
+    const p = getPlayer(i.playerId);
+    const dl = i.duration - i.recovered;
+    const col = dl <= 3 ? 'var(--green)' : dl <= 7 ? 'var(--orange)' : 'var(--red)';
+    const bc = i.progress >= 80 ? 'var(--green)' : i.progress >= 50 ? 'var(--orange)' : 'var(--red)';
+    return `<div class="inj-item">
+      <div class="inj-ico ${i.severity==='high'?'sev-h':i.severity==='med'?'sev-m':'sev-l'}">${i.emoji}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${i.diag || i.type}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:2px">${p ? p.prenom + ' ' + p.nom : ''} · ${i.zone}</div>
+        <div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:3px"><span>Récupération</span><span>${i.progress}%</span></div>
+          <div class="prog"><div class="prog-f" style="width:${i.progress}%;background:${bc}"></div></div>
+        </div>
+      </div>
+      <div class="inj-days"><div class="days-n" style="color:${col}">${dl}</div><div class="days-l">jours</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashCheckins() {
+  const el = document.getElementById('dash-checkins');
+  if (!el) return;
+  const today = todayStr();
+  const todayCI = DATA.checkins.filter(c => c.date === today);
+  const notChecked = DATA.players.filter(p => !todayCI.find(c => c.playerId === p.id));
+  let html = '';
+  if (todayCI.length) {
+    todayCI.forEach(c => {
+      const p = getPlayer(c.playerId);
+      if (!p) return;
+      const moodEmoji = ['','😣','😕','😐','🙂','💪'][c.mood] || '—';
+      const painColor = c.pain >= 4 ? 'var(--red)' : c.pain >= 2 ? 'var(--orange)' : 'var(--green)';
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        ${ava(p)}
+        <div style="flex:1"><div style="font-weight:600;font-size:13px">${p.prenom} ${p.nom}</div></div>
+        <span style="font-size:18px">${moodEmoji}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${painColor}">Douleur: ${c.pain}/5</span>
+      </div>`;
+    });
+  }
+  if (notChecked.length) {
+    html += `<div style="margin-top:12px;font-size:12px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.8px">${notChecked.length} joueur${notChecked.length > 1 ? 's' : ''} sans check-in</div>`;
+    html += notChecked.slice(0,3).map(p => `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;opacity:.5">${ava(p)}<div style="font-size:13px">${p.prenom} ${p.nom}</div></div>`).join('');
+    if (notChecked.length > 3) html += `<div style="font-size:12px;color:var(--ink4);padding:4px 0">…et ${notChecked.length - 3} autres</div>`;
+  }
+  if (!todayCI.length && !DATA.players.length) html = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">Aucun joueur enregistré</div>';
+  el.innerHTML = html;
+}
+
+function renderActivity() {
+  const el = document.getElementById('activity-log');
+  if (!el) return;
+  if (!DATA.activity.length) { el.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">Aucune activité</div>'; return; }
+  el.innerHTML = DATA.activity.slice(0, 6).map(a => `
+    <div class="tl-item">
+      <div class="tl-dot ${a.type}">${a.type==='r'?'!':a.type==='g'?'✓':a.type==='o'?'⚡':'●'}</div>
+      <div><div class="tl-text">${a.text}</div><div class="tl-time">${a.time}</div></div>
+    </div>`).join('');
+}
+
+function updateBadges() {
+  const active = DATA.injuries.filter(i => i.active).length;
+  const badge = document.getElementById('nb-blessures');
+  if (badge) { badge.textContent = active; badge.style.display = active > 0 ? 'inline' : 'none'; }
+  const nbJ = document.getElementById('nb-joueurs');
+  if (nbJ) nbJ.textContent = `(${DATA.players.length})`;
+}
+
+// ══════════════════════════════════════════
+// JOUEURS
+// ══════════════════════════════════════════
+let playerFilter = 'tous';
+function setFilter(f, el) {
+  playerFilter = f;
+  document.querySelectorAll('#filter-pills .pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  renderJoueurs();
+}
+
+function renderJoueurs() {
+  const tbody = document.getElementById('joueurs-tbody');
+  if (!tbody) return;
+  const q = (document.getElementById('player-search')?.value || '').toLowerCase();
+  const posFilters = ['G','DC','DD','DG','MD','MC','MO','AD','AG','AC'];
+  let players = DATA.players;
+  if (q) players = players.filter(p => (p.prenom + ' ' + p.nom).toLowerCase().includes(q) || p.pos.toLowerCase().includes(q));
+  if (playerFilter !== 'tous') {
+    if (posFilters.includes(playerFilter)) players = players.filter(p => p.pos === playerFilter);
+    else players = players.filter(p => playerStatus(p) === playerFilter);
+  }
+  if (!players.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty" style="padding:32px"><div class="empty-icon">🔍</div><div class="empty-title">Aucun joueur trouvé</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = players.map(p => {
+    const st = playerStatus(p);
+    const badge = st === 'blessé' ? '<span class="badge b-red">Blessé</span>' : st === 'surveillance' ? '<span class="badge b-orange">Surveillance</span>' : '<span class="badge b-green">Dispo</span>';
+    const inj = getActiveInjury(p.id);
+    const injCell = inj ? `<span style="font-size:12px">${inj.diag || inj.type} · ${inj.zone}</span>` : '<span style="color:var(--ink4);font-size:12px">—</span>';
+    const load = getCharge(p.id);
+    const lc = load >= 85 ? 'var(--red)' : load >= 70 ? 'var(--orange)' : 'var(--blue)';
+    const loadCell = load > 0 ? `<div style="display:flex;align-items:center;gap:8px"><div class="prog" style="width:70px"><div class="prog-f" style="width:${load}%;background:${lc}"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${lc}">${load}%</span></div>` : '<span style="color:var(--ink4);font-size:12px">—</span>';
+    return `<tr>
+      <td><div class="p-cell">${ava(p)}<div><div class="p-name">${p.prenom} ${p.nom}</div><div class="p-pos">#${p.num}</div></div></div></td>
+      <td><span class="badge b-gray">${p.pos}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:13px">#${p.num}</td>
+      <td>${badge}</td>
+      <td>${injCell}</td>
+      <td>${loadCell}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm btn-icon" title="Voir fiche" onclick="openProfil('${p.id}')">👁</button>
+          <button class="btn btn-outline btn-sm btn-icon" title="Modifier" onclick="editPlayer('${p.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" title="Supprimer" onclick="deletePlayer('${p.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function clearPlayerForm() {
+  ['p-prenom','p-nom','p-num','p-poids','p-taille','p-email','p-tel','p-licence','p-allergies','p-medecin','p-urgence'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const dob = document.getElementById('p-dob'); if (dob) dob.value = '';
+}
+
+async function savePlayer() {
+  const id = document.getElementById('edit-player-id').value;
+  const prenom = document.getElementById('p-prenom').value.trim();
+  const nom = document.getElementById('p-nom').value.trim();
+  const num = parseInt(document.getElementById('p-num').value);
+  const pos = document.getElementById('p-pos').value;
+  if (!prenom || !nom || !num || !pos) { showToast('⚠️ Prénom, nom, numéro et poste sont obligatoires'); return; }
+
+  const playerData = {
+    prenom, nom, pos, num,
+    dob: document.getElementById('p-dob').value,
+    poids: parseInt(document.getElementById('p-poids').value) || 0,
+    taille: parseInt(document.getElementById('p-taille').value) || 0,
+    blood: document.getElementById('p-blood').value,
+    email: document.getElementById('p-email').value,
+    tel: document.getElementById('p-tel').value,
+    licence: document.getElementById('p-licence').value,
+    allergies: document.getElementById('p-allergies').value,
+    medecin: document.getElementById('p-medecin').value,
+    urgence: document.getElementById('p-urgence').value,
+    foot: document.getElementById('p-foot').value,
+  };
+
+  if (id) {
+    // Edit
+    const idx = DATA.players.findIndex(p => p.id === id);
+    if (idx >= 0) DATA.players[idx] = { ...DATA.players[idx], ...playerData };
+    addActivity('b', `Fiche modifiée — ${prenom} ${nom}`);
+    showToast(`${prenom} ${nom} mis à jour ✓`);
+  } else {
+    // New
+    playerData.id = 'p' + Date.now();
+    playerData.color = COLORS[DATA.players.length % COLORS.length];
+    DATA.players.push(playerData);
+    addActivity('b', `Nouveau joueur — ${prenom} ${nom} (#${num})`);
+    showToast(`${prenom} ${nom} ajouté ✓`);
+  }
+
+  const ok = await saveData();
+  if (ok) {
+    closeModal('modal-player');
+    renderAll();
+    populatePlayerSelects();
+  }
+}
+
+function editPlayer(id) {
+  const p = getPlayer(id);
+  if (!p) return;
+  document.getElementById('edit-player-id').value = id;
+  document.getElementById('modal-player-title').textContent = 'Modifier le joueur';
+  document.getElementById('save-player-btn').textContent = 'Enregistrer les modifications ✓';
+  document.getElementById('p-prenom').value = p.prenom || '';
+  document.getElementById('p-nom').value = p.nom || '';
+  document.getElementById('p-dob').value = p.dob || '';
+  document.getElementById('p-num').value = p.num || '';
+  document.getElementById('p-pos').value = p.pos || 'G';
+  document.getElementById('p-foot').value = p.foot || 'D';
+  document.getElementById('p-poids').value = p.poids || '';
+  document.getElementById('p-taille').value = p.taille || '';
+  document.getElementById('p-blood').value = p.blood || 'A+';
+  document.getElementById('p-email').value = p.email || '';
+  document.getElementById('p-tel').value = p.tel || '';
+  document.getElementById('p-licence').value = p.licence || '';
+  document.getElementById('p-allergies').value = p.allergies || '';
+  document.getElementById('p-medecin').value = p.medecin || '';
+  document.getElementById('p-urgence').value = p.urgence || '';
+  openModal('modal-player');
+}
+
+async function deletePlayer(id) {
+  const p = getPlayer(id);
+  if (!p) return;
+  if (!confirm(`Supprimer ${p.prenom} ${p.nom} ? Cette action est irréversible.`)) return;
+  DATA.players = DATA.players.filter(x => x.id !== id);
+  DATA.injuries = DATA.injuries.filter(i => i.playerId !== id);
+  DATA.checkins = DATA.checkins.filter(c => c.playerId !== id);
+  addActivity('r', `Joueur supprimé — ${p.prenom} ${p.nom}`);
+  await saveData();
+  renderAll();
+  showToast(`${p.prenom} ${p.nom} supprimé`);
+}
+
+function openProfil(pid) {
+  const p = getPlayer(pid);
+  if (!p) return;
+  const injs = DATA.injuries.filter(i => i.playerId === pid);
+  const ai = injs.find(i => i.active);
+  const load = getCharge(pid);
+  const st = playerStatus(p);
+  const age = p.dob ? Math.floor((new Date() - new Date(p.dob)) / 31557600000) : '—';
+  const el = document.getElementById('profil-content');
+  el.innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-ava">${initials(p)}</div>
+      <div style="flex:1">
+        <div class="detail-name">${p.prenom} ${p.nom}</div>
+        <div class="detail-role">${p.pos} · #${p.num}</div>
+        <div class="detail-tags">
+          <span class="detail-tag">${age} ans</span>
+          ${p.poids ? `<span class="detail-tag">${p.poids} kg</span>` : ''}
+          ${p.blood ? `<span class="detail-tag">${p.blood}</span>` : ''}
+          <span class="detail-tag" style="${ai ? 'background:rgba(220,38,38,.3)' : 'background:rgba(22,163,74,.25)'}">
+            ${ai ? '🩹 Blessé' : '✅ Disponible'}
+          </span>
+        </div>
+      </div>
+      <div class="detail-stats">
+        <div class="ds-item"><div class="ds-num" style="color:${ai?'#ff9999':'#86efac'}">${injs.length}</div><div class="ds-lbl">Blessures</div></div>
+        <div class="ds-item"><div class="ds-num">${injs.reduce((a,i)=>a+i.duration,0)}</div><div class="ds-lbl">Jours perdus</div></div>
+        <div class="ds-item"><div class="ds-num">${ai ? ai.duration - ai.recovered : load + '%'}</div><div class="ds-lbl">${ai ? 'Jours restants' : 'Charge'}</div></div>
+      </div>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      ${ai ? `<div class="alert red"><span class="alert-icon">🩹</span><div><strong>Blessure active :</strong> ${ai.diag || ai.type} depuis le ${fmtDate(ai.date)}. Retour dans ~${ai.duration - ai.recovered} jours.</div></div>` : ''}
+      ${ai ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
+        <div class="recovery-item">
+          <div class="recovery-top"><span class="recovery-label">Progression récupération</span><span class="recovery-pct" style="color:${ai.progress>=80?'var(--green)':'var(--orange)'}">  ${ai.progress}%</span></div>
+          <div class="prog" style="height:8px"><div class="prog-f" style="width:${ai.progress}%;background:${ai.progress>=80?'var(--green)':'var(--orange)'}"></div></div>
+        </div>
+        ${ai.notes ? `<div class="note-box" style="margin-top:10px">"${ai.notes}"<div class="note-meta">Note médicale · ${fmtDate(ai.date)}</div></div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-green btn-sm" style="flex:1" onclick="resolveInjury('${ai.id}');closeModal('modal-profil')">✓ Marquer guéri</button>
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="closeModal('modal-profil');editInjury('${ai.id}')">✏️ Modifier</button>
+        </div>
+      </div>` : ''}
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">Historique blessures (${injs.length})</div>
+        ${injs.length ? injs.map(i => `<div class="inj-item">
+          <div class="inj-ico ${i.active?'sev-h':'sev-l'}">${i.emoji}</div>
+          <div style="flex:1"><div style="font-weight:700;font-size:13px">${i.diag || i.type}</div><div style="font-size:12px;color:var(--ink3);margin-top:2px">${i.zone} · ${fmtDate(i.date)} · ${i.duration}j</div></div>
+          <span class="badge ${i.active?'b-red':'b-green'}">${i.active?'En cours':'Guéri'}</span>
+        </div>`).join('') : '<div style="color:var(--ink3);font-size:13px;padding:12px 0">Aucun antécédent de blessure.</div>'}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">Informations médicales</div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
+          <div class="info-row"><span class="lbl">Groupe sanguin</span><span class="val">${p.blood || '—'}</span></div>
+          <div class="info-row"><span class="lbl">Allergies</span><span class="val">${p.allergies || 'Aucune connue'}</span></div>
+          <div class="info-row"><span class="lbl">Médecin traitant</span><span class="val">${p.medecin || '—'}</span></div>
+          <div class="info-row"><span class="lbl">Contact urgence</span><span class="val">${p.urgence || '—'}</span></div>
+          <div class="info-row"><span class="lbl">Licence FFF</span><span class="val">${p.licence || '—'}</span></div>
+          <div class="info-row"><span class="lbl">Email</span><span class="val">${p.email || '—'}</span></div>
+          <div class="info-row"><span class="lbl">Téléphone</span><span class="val">${p.tel || '—'}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="closeModal('modal-profil');openModal('modal-injury');setTimeout(()=>{document.getElementById('i-player').value='${pid}'},50)">+ Déclarer une blessure</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-profil');editPlayer('${pid}')">✏️ Modifier fiche</button>
+      </div>
+    </div>`;
+  openModal('modal-profil');
+}
+
+// ══════════════════════════════════════════
+// BLESSURES
+// ══════════════════════════════════════════
+function setBlessureTab(tab, el) {
+  blessureTab = tab;
+  document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderBlessures();
+}
+
+function renderBlessures() {
+  const el = document.getElementById('blessures-content');
+  if (!el) return;
+  let injuries = DATA.injuries;
+  if (blessureTab === 'actives') injuries = injuries.filter(i => i.active);
+  else if (blessureTab === 'resolues') injuries = injuries.filter(i => !i.active);
+
+  if (!injuries.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">${blessureTab === 'actives' ? '🎉' : '📋'}</div><div class="empty-title">${blessureTab === 'actives' ? 'Aucune blessure active !' : 'Aucune blessure résolue'}</div><div class="empty-sub">Les blessures déclarées apparaîtront ici.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Joueur</th><th>Diagnostic</th><th>Zone</th><th>Sévérité</th><th>Début</th><th>Durée</th><th>Progression</th><th>Kiné</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>${injuries.map(i => {
+      const p = getPlayer(i.playerId);
+      const dl = i.duration - i.recovered;
+      const bc = i.progress >= 80 ? 'var(--green)' : i.progress >= 50 ? 'var(--orange)' : 'var(--red)';
+      const sevBadge = i.severity === 'high' ? '<span class="badge b-red">Haute</span>' : i.severity === 'med' ? '<span class="badge b-orange">Moyenne</span>' : '<span class="badge b-green">Faible</span>';
+      return `<tr>
+        <td>${p ? `<div class="p-cell">${ava(p,32)}<div class="p-name" style="font-size:13px">${p.prenom} ${p.nom}</div></div>` : '—'}</td>
+        <td style="font-weight:600;font-size:13px">${i.diag || i.type}</td>
+        <td style="font-size:12px;color:var(--ink3)">${i.zone}</td>
+        <td>${sevBadge}</td>
+        <td style="font-size:12px">${fmtDate(i.date)}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${i.duration}j</td>
+        <td style="min-width:120px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="prog" style="flex:1"><div class="prog-f" style="width:${i.progress}%;background:${bc}"></div></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${bc}">${i.progress}%</span>
+          </div>
+        </td>
+        <td style="font-size:12px">${i.kine !== 'Non' ? `<span class="badge b-blue">${i.kine}</span>` : '—'}</td>
+        <td>${i.active ? `<span class="badge b-red">${dl}j restants</span>` : '<span class="badge b-green">Guéri</span>'}</td>
+        <td>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-outline btn-sm btn-icon" title="Modifier" onclick="editInjury('${i.id}')">✏️</button>
+            ${i.active ? `<button class="btn btn-green btn-sm btn-icon" title="Marquer guéri" onclick="resolveInjury('${i.id}')">✓</button>` : ''}
+            <button class="btn btn-danger btn-sm btn-icon" title="Supprimer" onclick="deleteInjury('${i.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div></div>`;
+}
+
+async function saveInjury() {
+  const id = document.getElementById('edit-injury-id').value;
+  const pid = document.getElementById('i-player').value;
+  const dur = parseInt(document.getElementById('i-duration').value);
+  if (!pid) { showToast('⚠️ Sélectionner un joueur'); return; }
+  if (!dur || dur < 1) { showToast('⚠️ Durée invalide'); return; }
+  const emojis = {Musculaire:'🦵',Ligamentaire:'🦶',Osseuse:'🦴',Contusion:'🫁',Tendineuse:'💪',Autre:'🩹'};
+  const type = document.getElementById('i-type').value;
+  const injData = {
+    playerId: pid, type, zone: document.getElementById('i-zone').value,
+    severity: document.getElementById('i-severity').value,
+    date: document.getElementById('i-date').value || todayStr(),
+    duration: dur, recovered: 0,
+    progress: parseInt(document.getElementById('i-progress').value) || 5,
+    diag: document.getElementById('i-diag').value,
+    notes: document.getElementById('i-notes').value,
+    kine: document.getElementById('i-kine').value,
+    active: true, emoji: emojis[type] || '🩹',
+  };
+  const p = getPlayer(pid);
+  if (id) {
+    const idx = DATA.injuries.findIndex(i => i.id === id);
+    if (idx >= 0) DATA.injuries[idx] = { ...DATA.injuries[idx], ...injData };
+    addActivity('b', `Blessure modifiée — ${p?.prenom || ''} ${p?.nom || ''}`);
+    showToast('Blessure mise à jour ✓');
+  } else {
+    injData.id = 'i' + Date.now();
+    DATA.injuries.push(injData);
+    addActivity('r', `Nouvelle blessure — ${p?.prenom || ''} ${p?.nom || ''} (${type} ${injData.zone})`);
+    showToast('Blessure enregistrée ✓');
+  }
+  await saveData();
+  closeModal('modal-injury');
+  renderAll();
+}
+
+function editInjury(id) {
+  const i = DATA.injuries.find(x => x.id === id);
+  if (!i) return;
+  document.getElementById('edit-injury-id').value = id;
+  document.getElementById('modal-injury-title').textContent = 'Modifier la blessure';
+  document.getElementById('i-player').value = i.playerId;
+  document.getElementById('i-type').value = i.type;
+  document.getElementById('i-severity').value = i.severity;
+  document.getElementById('i-zone').value = i.zone;
+  document.getElementById('i-date').value = i.date;
+  document.getElementById('i-duration').value = i.duration;
+  document.getElementById('i-diag').value = i.diag || '';
+  document.getElementById('i-notes').value = i.notes || '';
+  document.getElementById('i-kine').value = i.kine;
+  document.getElementById('i-progress').value = i.progress;
+  openModal('modal-injury');
+}
+
+async function resolveInjury(id) {
+  const inj = DATA.injuries.find(i => i.id === id);
+  if (!inj) return;
+  inj.active = false; inj.progress = 100;
+  const p = getPlayer(inj.playerId);
+  addActivity('g', `Blessure résolue — ${p?.prenom || ''} ${p?.nom || ''}`);
+  await saveData();
+  renderAll();
+  showToast('Blessure marquée guérie ✓');
+}
+
+async function deleteInjury(id) {
+  if (!confirm('Supprimer cette blessure ?')) return;
+  DATA.injuries = DATA.injuries.filter(i => i.id !== id);
+  await saveData();
+  renderAll();
+  showToast('Blessure supprimée');
+}
+
+// ══════════════════════════════════════════
+// CHECK-IN
+// ══════════════════════════════════════════
+let ciMoodVal = 0, ciPainVal = 0;
+
+function selMood(el, v) {
+  ciMoodVal = v;
+  document.querySelectorAll('#ci-mood-strip .mood-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function selPain(el, v) {
+  ciPainVal = v;
+  document.querySelectorAll('#ci-pain-scale .pain-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+async function saveCheckin() {
+  const pid = document.getElementById('ci-player').value;
+  if (!pid) { showToast('⚠️ Sélectionner un joueur'); return; }
+  if (!ciMoodVal) { showToast('⚠️ Sélectionner une humeur'); return; }
+  const p = getPlayer(pid);
+  // Remove previous check-in for today for this player
+  const today = todayStr();
+  DATA.checkins = DATA.checkins.filter(c => !(c.playerId === pid && c.date === today));
+  DATA.checkins.unshift({
+    id: 'ci' + Date.now(),
+    playerId: pid,
+    date: today,
+    time: nowStr(),
+    mood: ciMoodVal,
+    pain: ciPainVal,
+    note: document.getElementById('ci-note').value,
+  });
+  if (ciPainVal >= 3) {
+    addActivity('r', `🚨 Douleur niveau ${ciPainVal}/5 — ${p?.prenom || ''} ${p?.nom || ''}`);
+  } else {
+    addActivity('b', `Check-in — ${p?.prenom || ''} ${p?.nom || ''} (humeur ${ciMoodVal}/5)`);
+  }
+  await saveData();
+  // Reset
+  ciMoodVal = 0; ciPainVal = 0;
+  document.querySelectorAll('#ci-mood-strip .mood-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('#ci-pain-scale .pain-btn').forEach(b => b.classList.remove('sel'));
+  document.getElementById('ci-player').value = '';
+  document.getElementById('ci-note').value = '';
+  renderCheckins();
+  renderDashboard();
+  showToast(`Check-in ${p?.prenom || ''} enregistré ✓`);
+}
+
+function renderCheckins() {
+  // Today's checkins
+  const today = todayStr();
+  const todayCI = DATA.checkins.filter(c => c.date === today);
+  const total = DATA.players.length;
+  const ciCountEl = document.getElementById('ci-count');
+  if (ciCountEl) ciCountEl.textContent = `${todayCI.length} / ${total}`;
+
+  const todayEl = document.getElementById('checkins-today');
+  if (todayEl) {
+    if (!todayCI.length) {
+      todayEl.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">Aucun check-in pour aujourd\'hui</div>';
+    } else {
+      const moodEmojis = ['','😣','😕','😐','🙂','💪'];
+      todayEl.innerHTML = todayCI.map(c => {
+        const p = getPlayer(c.playerId);
+        if (!p) return '';
+        const painColor = c.pain >= 4 ? 'var(--red)' : c.pain >= 2 ? 'var(--orange)' : 'var(--green)';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg);border-radius:var(--r-sm);border:1px solid var(--border)">
+          ${ava(p)}
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:13px">${p.prenom} ${p.nom}</div>
+            ${c.note ? `<div style="font-size:12px;color:var(--ink3);margin-top:2px">${c.note}</div>` : ''}
+          </div>
+          <span style="font-size:22px">${moodEmojis[c.mood] || '—'}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${painColor}">💊 ${c.pain}/5</span>
+          <button class="btn btn-danger btn-sm btn-icon" title="Supprimer" onclick="deleteCheckin('${c.id}')">🗑</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // History table
+  const histEl = document.getElementById('checkins-history');
+  if (histEl) {
+    const moodEmojis = ['','😣','😕','😐','🙂','💪'];
+    const moodLabels = ['','Très mal','Mal','Moyen','Bien','Top !'];
+    if (!DATA.checkins.length) {
+      histEl.innerHTML = `<tr><td colspan="5"><div class="empty" style="padding:24px"><div class="empty-icon">📋</div><div class="empty-title">Aucun check-in enregistré</div></div></td></tr>`;
+    } else {
+      histEl.innerHTML = DATA.checkins.slice(0, 50).map(c => {
+        const p = getPlayer(c.playerId);
+        const painColor = c.pain >= 4 ? 'var(--red)' : c.pain >= 2 ? 'var(--orange)' : 'var(--green)';
+        return `<tr>
+          <td style="font-size:12px;color:var(--ink3)">${fmtDate(c.date)} ${c.time || ''}</td>
+          <td>${p ? `<div class="p-cell">${ava(p,28)}<span style="font-size:13px;font-weight:600">${p.prenom} ${p.nom}</span></div>` : '—'}</td>
+          <td><span style="font-size:18px">${moodEmojis[c.mood] || '—'}</span> <span style="font-size:12px;color:var(--ink3)">${moodLabels[c.mood] || ''}</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${painColor}">${c.pain}/5</td>
+          <td style="font-size:12px;color:var(--ink3);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.note || '—'}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+async function deleteCheckin(id) {
+  DATA.checkins = DATA.checkins.filter(c => c.id !== id);
+  await saveData();
+  renderCheckins();
+  renderDashboard();
+  showToast('Check-in supprimé');
+}
+
+// ══════════════════════════════════════════
+// CHARGE & IA
+// ══════════════════════════════════════════
+function renderCharge() {
+  renderChargeList();
+  renderAI();
+  renderChargeAlerts();
+}
+
+function renderChargeList() {
+  const el = document.getElementById('charge-list');
+  if (!el) return;
+  const playerLoads = DATA.players.map(p => {
+    const charges = DATA.charges.filter(c => c.playerId === p.id);
+    const latest = charges.sort((a,b) => b.week.localeCompare(a.week))[0];
+    return { p, charge: latest };
+  }).filter(x => x.charge).sort((a,b) => b.charge.load - a.charge.load);
+
+  if (!playerLoads.length) {
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">Aucune charge saisie. Cliquez sur "+ Saisir charge" pour commencer.</div>';
+    return;
+  }
+
+  el.innerHTML = playerLoads.map(({ p, charge }) => {
+    const lc = charge.load >= 85 ? 'var(--red)' : charge.load >= 70 ? 'var(--orange)' : 'var(--blue)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      ${ava(p,32)}
+      <div style="width:130px;flex-shrink:0">
+        <div style="font-weight:700;font-size:13px">${p.prenom} ${p.nom}</div>
+        <div style="font-size:10px;color:var(--ink3)">${p.pos} · Sem. ${charge.week.split('-W')[1]}</div>
+      </div>
+      <div style="flex:1"><div class="prog"><div class="prog-f" style="width:${charge.load}%;background:${lc}"></div></div></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${lc};width:36px;text-align:right">${charge.load}%</div>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteCharge('${charge.id}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function renderAI() {
+  const el = document.getElementById('ai-risks');
+  if (!el) return;
+  const risks = DATA.players.map(p => {
+    const injs = DATA.injuries.filter(i => i.playerId === p.id).length;
+    const load = getCharge(p.id);
+    const today = todayStr();
+    const recentPain = DATA.checkins.filter(c => c.playerId === p.id && c.date === today && c.pain >= 3).length;
+    const risk = Math.min(99, Math.round(load * 0.55 + injs * 12 + recentPain * 10));
+    if (risk < 20) return null;
+    return { p, risk, load, injs, recentPain };
+  }).filter(Boolean).sort((a,b) => b.risk - a.risk).slice(0,5);
+
+  if (!risks.length) {
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px">Aucun risque détecté. Ajoutez des charges pour activer l\'analyse.</div>';
+    return;
+  }
+
+  el.innerHTML = risks.map(r => {
+    const col = r.risk >= 70 ? 'var(--red)' : r.risk >= 50 ? 'var(--orange)' : 'var(--yellow)';
+    const bg = r.risk >= 70 ? 'var(--red-l)' : r.risk >= 50 ? 'var(--orange-l)' : 'var(--yellow-l)';
+    const reasons = [];
+    if (r.load >= 80) reasons.push(`charge élevée (${r.load}%)`);
+    if (r.injs >= 2) reasons.push(`${r.injs} blessures saison`);
+    if (r.recentPain) reasons.push('douleur signalée aujourd\'hui');
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${bg};border-radius:var(--r-sm);border:1px solid ${col}20">
+      <div style="width:46px;height:46px;border-radius:12px;background:${bg};border:2px solid ${col};display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:18px;font-weight:700;color:${col};flex-shrink:0">${r.risk}%</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${r.p.prenom} ${r.p.nom}</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px">${reasons.join(' · ') || 'Analyse combinée'}</div>
+        <div class="prog" style="margin-top:6px"><div class="prog-f" style="width:${r.risk}%;background:${col}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderChargeAlerts() {
+  const el = document.getElementById('charge-alerts');
+  if (!el) return;
+  const over = DATA.charges.filter(c => c.load >= 70).map(c => ({ c, p: getPlayer(c.playerId) })).filter(x => x.p).sort((a,b) => b.c.load - a.c.load);
+  if (!over.length) {
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center">Aucune surcharge détectée 🎉</div>';
+    return;
+  }
+  el.innerHTML = over.map(({ c, p }) => `
+    <div class="alert ${c.load >= 85 ? 'red' : 'orange'}">
+      <span class="alert-icon">${c.load >= 85 ? '🔴' : '🟡'}</span>
+      <div><strong>${p.prenom} ${p.nom}</strong> — ${c.load}% du seuil${c.load >= 85 ? '. Repos recommandé.' : '.'}</div>
+    </div>`).join('');
+}
+
+async function saveCharge() {
+  const pid = document.getElementById('ch-player').value;
+  const load = parseInt(document.getElementById('ch-load').value);
+  if (!pid) { showToast('⚠️ Sélectionner un joueur'); return; }
+  if (!load || load < 0 || load > 100) { showToast('⚠️ Charge entre 0 et 100'); return; }
+  const week = document.getElementById('ch-week').value || getCurrentWeek();
+  // Remove existing for same player + week
+  DATA.charges = DATA.charges.filter(c => !(c.playerId === pid && c.week === week));
+  DATA.charges.push({
+    id: 'ch' + Date.now(),
+    playerId: pid, week, load,
+    mins: parseInt(document.getElementById('ch-mins').value) || 0,
+    note: document.getElementById('ch-note').value,
+  });
+  const p = getPlayer(pid);
+  addActivity('o', `Charge mise à jour — ${p?.prenom || ''} ${p?.nom || ''} (${load}%)`);
+  await saveData();
+  closeModal('modal-charge');
+  renderCharge();
+  renderDashboard();
+  showToast('Charge enregistrée ✓');
+}
+
+async function deleteCharge(id) {
+  DATA.charges = DATA.charges.filter(c => c.id !== id);
+  await saveData();
+  renderCharge();
+  renderDashboard();
+  showToast('Charge supprimée');
+}
+
+function getCurrentWeek() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+async function init() {
+  // Set today's date in forms
+  document.getElementById('i-date').value = todayStr();
+  document.getElementById('ch-week').value = getCurrentWeek();
+  await loadData();
+}
+
+function skipSetup() {
+  // Use localStorage only, no Supabase
+  localStorage.setItem(LS_CONFIG, JSON.stringify({ url: '', key: '' }));
+  hideSetupScreen();
+  initSampleData();
+  localStorage.setItem('injurytrack-data-local', JSON.stringify(DATA));
+  renderAll();
+  updateSyncTime();
+  showToast('Mode local activé — données sur cet appareil uniquement');
+}
+
+init();
+</script>
+</div><!-- /app-main -->
+</body>
+</html>
